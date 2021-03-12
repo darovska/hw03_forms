@@ -5,6 +5,7 @@ from .models import Post, Group
 
 from .forms import PostForm
 
+
 def index(request):
     latest = Post.objects[:11]
     return render(request, "index.html", {"posts": latest})
