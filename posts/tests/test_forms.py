@@ -46,15 +46,11 @@ class TaskCreateFormTests(TestCase):
             'text': 'Тестовый текст',
         }
 
-    response = self.guest_client.post(
-            reverse('index')
-        )
-        # Проверяем, сработал ли редирект
-        self.assertRedirects(response, reverse('new'))
+        response = self.guest_client.post(reverse('index')
         # Проверяем, увеличилось ли число постов
-        self.assertEqual(Task.objects.count(), tasks_count+1)
+        response = self.assertEqual(Task.objects.count(), tasks_count+1)
         # Проверяем, что создалась запись с нашим слагом
-        self.assertTrue(
+        response = self.assertTrue(
             Task.objects.filter(
                 text='Тестовый текст',
                 ).exists()
