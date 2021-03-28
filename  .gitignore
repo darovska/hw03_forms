@@ -1,1 +1,6 @@
 /static
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover 

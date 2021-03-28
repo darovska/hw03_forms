@@ -18,8 +18,10 @@ class PostForm(forms.ModelForm):
         error_messages = {
             'text': {
                 'required': _("Это обязательное поле."),
-            },
+            }
+
         }
+
 
     def clean_text(self):
         data = self.cleaned_data['text']
