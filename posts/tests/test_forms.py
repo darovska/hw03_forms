@@ -7,13 +7,14 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from posts.forms import PostForm
-from posts.models import Post, Group
+from posts.models import Post, Group, User
 
-class TaskCreateFormTests(TestCase):
+
+class PostCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
-        
+        super().setUpClass()  
+        cls.user = User.objects.create(username='Петя')  
         cls.group = Group.objects.create(
             title='Название', 
             slug='Ссылка', 
@@ -24,34 +25,36 @@ class TaskCreateFormTests(TestCase):
         cls.post = Post.objects.create(
             text = "Тестовый текст",
             group = cls.group,
-            author = User.objects.create(username='Anon'),
+            author = cls.user,
          )
 
-        cls.form = TaskCreateForm()
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-        super().tearDownClass()
-    
     def setUp(self):
-        self.guest_client = Client()
-        self.user = User.objects.create_user(username='Anon')
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
+        self.authorized_client.force_login(PostCreateFormTests.user)
+        self.posts_count = Post.objects.count()
 
+    
     def test_create_post(self):
         posts_count = Post.objects.count()
         form_data = {
-            'text': 'Тестовый текст',
+            'group': self.group.id,
+            'text': 'Тестовый текст, который длиннее 15 символов',
         }
 
-        response = self.guest_client.post(reverse('index')
-        # Проверяем, увеличилось ли число постов
-        response = self.assertEqual(Task.objects.count(), tasks_count+1)
-        # Проверяем, что создалась запись с нашим слагом
-        response = self.assertTrue(
-            Task.objects.filter(
-                text='Тестовый текст',
-                ).exists()
+        response = self.authorized_client.force_login(
+            reverse('new_post'),
+            data=form_data,
+            follow=True
         )
+        self.assertRedirects(response, reverse('index'))
+        self.assertEqual(Post.objects.count(), self.posts_count + 1)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertTrue(
+            Post.objects.filter(
+                author=PostFormTests.user,
+                text=self.post.text,
+                group=PostFormTests.group.id,
+            ).exists()
+        )
+
